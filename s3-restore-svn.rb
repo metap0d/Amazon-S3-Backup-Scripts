@@ -44,7 +44,7 @@ def load_dumps!(bucket_name, repo)
             `#{GUNZIP} -c #{dump_file} | svnadmin load #{repo}`
             s = $?.exitstatus
             raise "'svnadmin load' failed for #{dump_file} with status #{s}" unless s == 0
-            File.unlink(dump_file) unless KEEP_FILES
+            File.unlink(dump_file) unless KEEP_DUMP_FILES
             rev1 = rev2 + 1
         end
     rescue => e
@@ -56,7 +56,7 @@ end
 def main(repo)
     connect!
     LOG.info "#{REPONAME}\n"
-    load_dumps!(full_bucket_name, repo)
+    load_dumps!(get_bucket_name, repo)
 end
 
 main(ARGV[0])

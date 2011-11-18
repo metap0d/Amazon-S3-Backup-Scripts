@@ -9,9 +9,8 @@ require File.join(File.dirname($0), 's3-svn-config')
 
 LOG = Logger.new(LOG_FILE)
 
-def usage!
-    
-    puts "Usage: #{$0}"
+def usage!    
+    puts "To use #{$0} you simply make sure that the repositories you want backed up are declared in s3-svn-config.rb\n"
     exit 0
 end
 usage! if ARGV[0] =~ /^(?:-h|--help)$/
@@ -55,19 +54,19 @@ def write_to_s3!(file, bucket_name)
             bucket_name
         )
     rescue => e
-        LOG.fatal "Faield to write to S3!"
+        LOG.fatal "Failed to write to S3!"
         LOG.fatal e
-#        exit 1
+        #        exit 1
     end
 end
 
-def main(repo)
+def main()
     
     # Connect to S3
     connect!
     
     # Make sure we have a bucket that we can use
-    bucket_name = full_bucket_name
+    bucket_name = get_bucket_name
     begin
         bucket = Bucket.find(bucket_name)
     rescue NoSuchBucket
@@ -78,20 +77,22 @@ def main(repo)
     
     # Try to backup each repository on the list
     SVN_PROJECTS.each do | s3Name, repo |
+        
         current_repo_dir = REPO_DIR + repo
         current_revision = `#{SVN_BINDIR}/svnlook youngest #{current_repo_dir}`.strip.to_i
+        
         LOG.info "Current Repo: #{current_repo_dir}"
-        next_rev = find_last_rev(bucket, s3Name) + 1
-        if next_rev >= current_revision
-            LOG.warn "Last backup for #{repo} is revision #{next_rev}, current revision is #{current_revision} - Aborting"
+        latest_backup_revision = get_latest_backup_revision(bucket, s3Name) + 1
+        if latest_backup_revision >= current_revision
+            LOG.info "Skipping Backup for #{repo}. Latest backup is revision #{latest_backup_revision}, and the current is  #{current_revision}."
             next
         end
         #  dump_file = dump_repository(repo, next_rev, current_revision)
         dump_file = dump_repository(current_repo_dir, 0, current_revision, s3Name)
         write_to_s3!(dump_file, bucket_name)
         LOG.info "Backup of #{repo} revision #{next_rev} to #{current_revision} finished"
-        File.unlink(dump_file) unless KEEP_FILES
+        File.unlink(dump_file) unless KEEP_DUMP_FILES
     end
 end
 
-main(repo)
+main()
