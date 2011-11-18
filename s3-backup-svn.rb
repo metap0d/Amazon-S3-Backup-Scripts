@@ -87,8 +87,24 @@ def main()
             LOG.info "Skipping Backup for #{repo}. Latest backup is revision #{latest_backup_revision}, and the current is  #{current_revision}."
             next
         end
+
+        # What type of backup are we doing?
+        if (DO_INCREMENTAL)
+            if (incremental_count < INCREMENTAL_UPDATE_COUNT)
+                # Do Incremental Backup
+                revision_to_backup_from = latest_backup_revision;
+            else
+                # TODO: Cleanup incrementals
+                
+                # Do Full Backup
+                revision_to_backup_from = 0;
+            end
+        else
+            # Do Full Backup
+            revision_to_backup_from = 0;
+        end
         #  dump_file = dump_repository(repo, next_rev, current_revision)
-        dump_file = dump_repository(current_repo_dir, 0, current_revision, s3Name)
+        dump_file = dump_repository(current_repo_dir, revision_to_backup_from, current_revision, s3Name)
         write_to_s3!(dump_file, bucket_name)
         LOG.info "Backup of #{repo} revision #{next_rev} to #{current_revision} finished"
         File.unlink(dump_file) unless KEEP_DUMP_FILES

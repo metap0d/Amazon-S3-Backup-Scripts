@@ -29,11 +29,19 @@ LOG_FILE   = '/path/where_the/logfile_goes/s3-backup.log'
 
 # Set to true if you want to keep the local copies of the backups
 KEEP_DUMP_FILES = false
+
+# Set to true if you only want to do incremental updates vs full backups
+DO_INCREMENTAL = false
+
+# The number of incremental backups before a full backup is done
+INCREMENTAL_UPDATE_COUNT = 5
+
 # A list of SVN Projects. 'ValidS3Name' => 'RepoName'
 # Below shows the example to backup /var/svn/MySVNProject
 SVN_PROJECTS = {
     'MySVNBackup' => 'MySVNProject'
 }
+
 
 ##############################################################
 # DO NOT EDIT AFTER THIS
