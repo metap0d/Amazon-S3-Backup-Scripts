@@ -4,7 +4,6 @@
 #             : on amazon's S3 service.
 # Copyright   : Copyright (c) 2011 Lee Robert
 # License     : See the LICENSE file
-
 %w{rubygems logger base64 sha1 aws/s3}.each{|lib| require lib}
 require File.join(File.dirname($0), 's3-svn-config')
 
